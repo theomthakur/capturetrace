@@ -27,9 +27,11 @@ The application is intentionally static and deterministic. It has no authenticat
 
 ## Prepared scenarios
 
-1. Normal connected capture.
+1. Clean connected capture.
 2. Offline capture followed by ordered replay after reconnection.
-3. Duplicate retry suppression and an unexpected-unit review gate.
+3. A lost acknowledgment followed by a safe, deduplicated retry.
+4. An unexpected unit held for human confirmation.
+5. An older data-contract version stopped before it changes the form.
 
 Every completed or partial run can be exported as a Markdown evidence report containing the scenario, integrity totals, event identities, measurements, outcomes, and validation rationale.
 

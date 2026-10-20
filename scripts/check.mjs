@@ -4,7 +4,7 @@ const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const js = readFileSync(new URL("../app.js", import.meta.url), "utf8");
 
-const required = ["CaptureTrace", "Run scenario", "Offline jobsite", "Retry + mismatch", "Export report", "Independent prototype"];
+const required = ["CaptureTrace", "Show this scenario", "Offline jobsite", "Lost acknowledgment", "Wrong units", "Old app contract", "Export report", "Independent prototype"];
 for (const text of required) {
   if (!html.includes(text)) throw new Error(`Missing required copy: ${text}`);
 }

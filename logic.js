@@ -1,7 +1,11 @@
 export const SCENARIOS = {
   normal: {
-    label: "Normal capture",
-    description: "Three connected measurements are validated and accepted immediately.",
+    label: "Clean capture",
+    category: "Baseline",
+    question: "What happens when everything works?",
+    description: "The tool captures three measurements while connected. Each event arrives once with the expected identity, units, and field context.",
+    expected: "All three measurements become trusted form values immediately.",
+    journey: ["The tool creates three identified events.", "The connected app sends each event immediately.", "The receiver validates and accepts all three."],
     events: [
       event("evt_CT07_0421", "width", 36.625, "in", "accepted", 421),
       event("evt_CT07_0422", "height", 58.25, "in", "accepted", 422),
@@ -10,24 +14,49 @@ export const SCENARIOS = {
   },
   offline: {
     label: "Offline jobsite",
-    description: "Events are committed locally, queued, and replayed in sequence after reconnection.",
+    category: "Connectivity",
+    question: "What happens when the jobsite loses internet?",
+    description: "The tool keeps capturing while offline. The app saves each event locally, shows that it is queued, and waits for connectivity.",
+    expected: "Nothing is silently lost. Reconnection replays all three events in sequence.",
+    journey: ["The tool captures while the app is offline.", "Three events stay visibly queued on the device.", "Reconnection replays and validates them in order."],
     events: [
       event("evt_CT07_0431", "width", 36.625, "in", "queued", 431),
       event("evt_CT07_0432", "height", 58.25, "in", "queued", 432),
       event("evt_CT07_0433", "depth", 5.5, "in", "queued", 433),
     ],
   },
-  retry: {
-    label: "Retry + mismatch",
-    description: "A repeated delivery is suppressed and unexpected units are held for human confirmation.",
+  acknowledgement: {
+    label: "Lost acknowledgment",
+    category: "Safe retry",
+    question: "What if the server saves a measurement but the reply is lost?",
+    description: "The server accepts the event, but the app never receives the acknowledgment. The app retries using the same stable event ID.",
+    expected: "The retry is recognized and suppressed. The measurement is written only once.",
+    journey: ["The tool creates one stable event ID.", "The first delivery succeeds, but its acknowledgment is lost.", "The retry reuses the ID and causes no second write."],
     events: [
       event("evt_CT07_0441", "width", 36.625, "in", "accepted", 441),
-      event("evt_CT07_0442", "height", 58.25, "in", "accepted", 442),
-      event("evt_CT07_0443", "depth", 5.5, "in", "accepted", 443),
-      event("evt_CT07_0444", "width", 37.0, "in", "accepted", 444, "North elevation"),
-      event("evt_CT07_0445", "height", 59.0, "in", "accepted", 445, "North elevation"),
-      event("evt_CT07_0444", "width", 37.0, "in", "duplicate", 444, "North elevation"),
-      event("evt_CT07_0446", "depth", 140, "mm", "review", 446, "North elevation"),
+      event("evt_CT07_0441", "width", 36.625, "in", "duplicate", 441),
+    ],
+  },
+  units: {
+    label: "Wrong units",
+    category: "Validation",
+    question: "What if a measurement arrives in the wrong units?",
+    description: "The form expects inches, but a depth measurement arrives in millimeters. Automatically converting it could hide the wrong device mode or field context.",
+    expected: "The value is preserved but held for review. The system does not guess.",
+    journey: ["The tool sends a depth value marked as millimeters.", "The contract expects inches for this field.", "The receiver keeps the raw value and requests confirmation."],
+    events: [
+      event("evt_CT07_0451", "depth", 140, "mm", "review", 451),
+    ],
+  },
+  contract: {
+    label: "Old app contract",
+    category: "Compatibility",
+    question: "What if an older app sends an unsupported event shape?",
+    description: "The measurement itself looks reasonable, but it arrives under an older contract version that the receiver no longer accepts automatically.",
+    expected: "The event is held for review instead of being partially interpreted.",
+    journey: ["An older app sends a measurement.v2 event.", "The receiver supports measurement.v3.", "The event pauses before it can change the form."],
+    events: [
+      { ...event("evt_CT07_0461", "height", 58.25, "in", "review", 461), contract: "measurement.v2" },
     ],
   },
 };
@@ -48,7 +77,7 @@ export function summarize(events) {
 }
 
 export function validateEvent(candidate, seen = new Set()) {
-  if (seen.has(candidate.id)) return { outcome: "duplicate", reason: "Acknowledgement was lost; retry reused an accepted event ID, so no second write occurred" };
+  if (seen.has(candidate.id)) return { outcome: "duplicate", reason: "Acknowledgment was lost; retry reused an accepted event ID, so no second write occurred" };
   if (candidate.contract !== "measurement.v3") return { outcome: "review", reason: "Unsupported data contract" };
   if (candidate.unit !== "in") return { outcome: "review", reason: `Expected inches; received ${candidate.unit}` };
   if (!candidate.id || !candidate.device || !candidate.field) return { outcome: "review", reason: "Required context is missing" };

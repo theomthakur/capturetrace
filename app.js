@@ -29,8 +29,14 @@ const elements = {
   deviceUnit: $("#device-unit"),
   deviceField: $("#device-field"),
   deviceSequence: $("#device-sequence"),
+  deviceContract: $("#device-contract"),
   progressCopy: $("#progress-copy"),
   progressBar: $("#progress-bar"),
+  scenarioCategory: $("#scenario-category"),
+  scenarioQuestion: $("#scenario-question"),
+  scenarioDescription: $("#scenario-description"),
+  scenarioExpected: $("#scenario-expected"),
+  journey: [$("#journey-capture"), $("#journey-transport"), $("#journey-decision")],
   dialog: $("#notes-dialog"),
 };
 
@@ -40,6 +46,7 @@ elements.buttons.forEach((button) => button.addEventListener("click", () => {
   if (state.running) return;
   state.scenario = button.dataset.scenario;
   elements.buttons.forEach((candidate) => candidate.classList.toggle("is-active", candidate === button));
+  updateScenarioGuide();
   resetWorkspace();
 }));
 
@@ -88,7 +95,7 @@ function resetWorkspace() {
   state.events = [];
   setOnline(true);
   elements.run.disabled = false;
-  elements.run.querySelector("span:first-child").textContent = "Run scenario";
+  elements.run.querySelector("span:first-child").textContent = "Show this scenario";
   elements.exportReport.disabled = true;
   elements.traceList.replaceChildren();
   elements.traceEmpty.hidden = false;
@@ -119,8 +126,9 @@ function runScenario() {
     return;
   }
 
-  scenario.events.forEach((item, index) => later(() => ingest(item), 400 + index * (state.scenario === "retry" ? 430 : 700)));
-  later(finishRun, 700 + scenario.events.length * (state.scenario === "retry" ? 430 : 700));
+  const interval = state.scenario === "acknowledgement" ? 900 : 700;
+  scenario.events.forEach((item, index) => later(() => ingest(item), 400 + index * interval));
+  later(finishRun, 700 + scenario.events.length * interval);
 }
 
 function finishRun() {
@@ -178,6 +186,7 @@ function updateDevice(item) {
   elements.deviceUnit.textContent = item.unit.toUpperCase();
   elements.deviceField.textContent = fieldLabels[item.field].toUpperCase();
   elements.deviceSequence.textContent = `SEQ ${String(item.sequence).padStart(4, "0")}`;
+  elements.deviceContract.textContent = item.contract;
   $(".device-body").classList.remove("pulse");
   requestAnimationFrame(() => $(".device-body").classList.add("pulse"));
 }
@@ -222,13 +231,13 @@ function setField(field, item) {
   const value = $(".field-value strong", row);
   const status = $(".field-status", row);
   if (!item) {
-    value.textContent = "—";
+    value.textContent = "…";
     status.textContent = "Waiting";
     status.className = "field-status empty";
     return;
   }
   value.textContent = displayMeasurement(item);
-  status.textContent = item.outcome === "review" ? "Confirm units" : "Trusted";
+  status.textContent = item.outcome === "review" ? (item.unit !== "in" ? "Confirm units" : "Review event") : "Trusted";
   status.className = `field-status ${item.outcome}`;
 }
 
@@ -291,4 +300,15 @@ function updateProgress() {
   elements.progressBar.style.width = `${(trusted / 3) * 100}%`;
 }
 
+function updateScenarioGuide() {
+  const scenario = SCENARIOS[state.scenario];
+  const selectedIndex = elements.buttons.findIndex((button) => button.dataset.scenario === state.scenario) + 1;
+  elements.scenarioCategory.textContent = `SCENARIO ${String(selectedIndex).padStart(2, "0")} · ${scenario.category.toUpperCase()}`;
+  elements.scenarioQuestion.textContent = scenario.question;
+  elements.scenarioDescription.textContent = scenario.description;
+  elements.scenarioExpected.textContent = scenario.expected;
+  elements.journey.forEach((element, index) => { element.textContent = scenario.journey[index]; });
+}
+
+updateScenarioGuide();
 resetWorkspace();
