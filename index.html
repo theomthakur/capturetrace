@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="CaptureTrace is an independent reliability sandbox for synthetic connected field measurements." />
+    <meta name="theme-color" content="#111714" />
+    <title>CaptureTrace — Connected measurement reliability sandbox</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#sandbox">Skip to reliability sandbox</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="CaptureTrace home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>CaptureTrace</span>
+      </a>
+      <div class="header-meta">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span>Deterministic demo</span>
+        <button class="text-button" id="open-notes" type="button">System notes</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="eyebrow"><span>CONNECTED FIELD DATA</span><span>RELIABILITY SANDBOX</span></div>
+        <div class="hero-grid">
+          <div>
+            <h1 id="hero-title">A measurement is only useful if it arrives <em>intact.</em></h1>
+          </div>
+          <div class="hero-copy">
+            <p>Explore how synthetic tool events survive offline capture, retries, duplicate delivery, and context mismatches before becoming trusted project data.</p>
+            <p class="disclaimer">Independent prototype prepared for a technical conversation. Synthetic devices and measurements only.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="scenario-bar" aria-label="Prepared reliability scenarios">
+        <div class="scenario-label">
+          <span class="section-index">01</span>
+          <div><strong>Choose a failure path</strong><small>Each run is deterministic and resets the workspace.</small></div>
+        </div>
+        <div class="scenario-buttons" role="group" aria-label="Scenario selection">
+          <button class="scenario-button is-active" data-scenario="normal" type="button"><span>01</span>Normal capture</button>
+          <button class="scenario-button" data-scenario="offline" type="button"><span>02</span>Offline jobsite</button>
+          <button class="scenario-button" data-scenario="retry" type="button"><span>03</span>Retry + mismatch</button>
+        </div>
+        <button class="run-button" id="run-scenario" type="button"><span>Run scenario</span><span aria-hidden="true">→</span></button>
+      </section>
+
+      <section class="metrics" aria-live="polite" aria-label="Scenario metrics">
+        <div><span id="metric-captured">0</span><small>Captured</small></div>
+        <div><span id="metric-accepted">0</span><small>Accepted</small></div>
+        <div><span id="metric-duplicate">0</span><small>Duplicate suppressed</small></div>
+        <div><span id="metric-review">0</span><small>Held for review</small></div>
+        <div class="integrity-score"><span id="metric-loss">0</span><small>Silently lost</small></div>
+      </section>
+
+      <section class="sandbox" id="sandbox" aria-label="Measurement reliability sandbox">
+        <article class="panel device-panel">
+          <div class="panel-heading">
+            <div><span class="section-index">A</span><h2>Connected tool</h2></div>
+            <span class="status-pill connected" id="connection-pill"><i></i>Connected</span>
+          </div>
+
+          <div class="device-stage" aria-label="Synthetic measuring device">
+            <div class="tape-line" aria-hidden="true"><span>0</span><i></i><i></i><i></i><i></i><strong>48</strong></div>
+            <div class="device-body">
+              <div class="device-top"><span>CT-07</span><span id="battery-display">86%</span></div>
+              <div class="device-reading"><strong id="device-value">36 ⅝</strong><span id="device-unit">IN</span></div>
+              <div class="device-context"><span id="device-field">WINDOW WIDTH</span><span id="device-sequence">SEQ 0421</span></div>
+              <div class="device-controls" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+
+          <dl class="device-facts">
+            <div><dt>Device</dt><dd>Field tool CT-07</dd></div>
+            <div><dt>Firmware</dt><dd>4.8.2</dd></div>
+            <div><dt>Contract</dt><dd>measurement.v3</dd></div>
+          </dl>
+
+          <div class="device-actions">
+            <button id="capture-button" class="capture-button" type="button"><span class="capture-icon" aria-hidden="true"></span>Capture measurement</button>
+            <button id="network-toggle" class="network-toggle" type="button" aria-pressed="false"><span aria-hidden="true">⌁</span><span>Take offline</span></button>
+          </div>
+        </article>
+
+        <article class="panel workflow-panel">
+          <div class="panel-heading">
+            <div><span class="section-index">B</span><h2>Field workflow</h2></div>
+            <span class="job-code">JOB-2407</span>
+          </div>
+
+          <div class="job-title">
+            <div class="job-icon" aria-hidden="true"><span></span><span></span></div>
+            <div><small>ACTIVE FORM</small><h3>Window opening survey</h3><p>South elevation · Level 2</p></div>
+          </div>
+
+          <div class="form-progress"><span id="progress-copy">0 of 3 fields trusted</span><div><i id="progress-bar"></i></div></div>
+
+          <div class="field-list" id="field-list">
+            <div class="field-row" data-field="width">
+              <div class="field-number">01</div>
+              <div class="field-copy"><strong>Opening width</strong><span>Expected: inches</span></div>
+              <div class="field-value"><strong>—</strong><span class="field-status empty">Waiting</span></div>
+            </div>
+            <div class="field-row" data-field="height">
+              <div class="field-number">02</div>
+              <div class="field-copy"><strong>Opening height</strong><span>Expected: inches</span></div>
+              <div class="field-value"><strong>—</strong><span class="field-status empty">Waiting</span></div>
+            </div>
+            <div class="field-row" data-field="depth">
+              <div class="field-number">03</div>
+              <div class="field-copy"><strong>Sill depth</strong><span>Expected: inches</span></div>
+              <div class="field-value"><strong>—</strong><span class="field-status empty">Waiting</span></div>
+            </div>
+          </div>
+
+          <div class="queue-banner" id="queue-banner" hidden>
+            <span aria-hidden="true">↯</span><div><strong>Saved on this device</strong><p id="queue-copy">Measurements will sync when connectivity returns.</p></div><span id="queue-count">0 queued</span>
+          </div>
+        </article>
+
+        <article class="panel trace-panel">
+          <div class="panel-heading">
+            <div><span class="section-index">C</span><h2>Integrity trace</h2></div>
+            <button id="reset-button" class="icon-button" type="button" aria-label="Reset scenario">↺</button>
+          </div>
+
+          <div class="trace-empty" id="trace-empty">
+            <div class="trace-radar" aria-hidden="true"><i></i><i></i><span></span></div>
+            <strong>No events yet</strong>
+            <p>Run a prepared scenario or capture a measurement manually.</p>
+          </div>
+          <ol class="trace-list" id="trace-list" aria-live="polite"></ol>
+        </article>
+      </section>
+
+      <section class="contract-section" id="contract">
+        <div class="contract-intro">
+          <span class="section-index">02</span>
+          <h2>Trust travels with the event.</h2>
+          <p>The interface can change. The invariant cannot: every accepted value retains enough identity and context to explain where it came from and why it was trusted.</p>
+        </div>
+        <div class="contract-code" role="img" aria-label="Example synthetic measurement event data contract">
+          <div class="code-header"><span>measurement.v3</span><span>JSON</span></div>
+          <pre><code>{
+  <span class="key">"event_id"</span>: <span class="string">"evt_CT07_0421"</span>,
+  <span class="key">"device_id"</span>: <span class="string">"CT-07"</span>,
+  <span class="key">"captured_at"</span>: <span class="string">"2026-10-23T13:38:04-04:00"</span>,
+  <span class="key">"measurement"</span>: { <span class="key">"value"</span>: <span class="number">36.625</span>, <span class="key">"unit"</span>: <span class="string">"in"</span> },
+  <span class="key">"context"</span>: { <span class="key">"job"</span>: <span class="string">"JOB-2407"</span>, <span class="key">"field"</span>: <span class="string">"opening_width"</span> },
+  <span class="key">"sequence"</span>: <span class="number">421</span>,
+  <span class="key">"contract"</span>: <span class="string">"measurement.v3"</span>
+}</code></pre>
+        </div>
+        <div class="invariant-list">
+          <div><span>01</span><strong>Stable identity</strong><p>Retries reuse one event ID, making duplicate delivery harmless.</p></div>
+          <div><span>02</span><strong>Explicit context</strong><p>Job, field, units, device, and capture time travel with the value.</p></div>
+          <div><span>03</span><strong>Visible state</strong><p>Queued and held events are surfaced instead of appearing successful.</p></div>
+          <div><span>04</span><strong>Safe ambiguity</strong><p>Unexpected context pauses for confirmation; it is never silently guessed.</p></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div><strong>CaptureTrace</strong><span>Independent engineering prototype by Om Thakur</span></div>
+      <p>Built to explore reliability at the physical-to-digital boundary. No affiliation with or representation of REEKON Tools.</p>
+    </footer>
+
+    <dialog id="notes-dialog">
+      <div class="dialog-heading"><div><small>SYSTEM NOTES</small><h2>What this prototype proves</h2></div><button id="close-notes" class="icon-button" type="button" aria-label="Close system notes">×</button></div>
+      <div class="notes-grid">
+        <section><span>01</span><h3>Local-first capture</h3><p>A capture is assigned an identity and retained before network delivery is attempted.</p></section>
+        <section><span>02</span><h3>Idempotent replay</h3><p>The receiver uses the stable event ID to make retry and reconnection safe.</p></section>
+        <section><span>03</span><h3>Contract validation</h3><p>Units, field context, schema version, and device metadata are validated at the boundary.</p></section>
+        <section><span>04</span><h3>Human-visible failure</h3><p>Anything uncertain enters a review state with a reason instead of disappearing or being guessed.</p></section>
+      </div>
+      <div class="dialog-note"><strong>Scope boundary</strong><p>This is a browser-only simulation—not a BLE implementation, production architecture recommendation, or representation of another company's internal system.</p></div>
+    </dialog>
+  </body>
+</html>
