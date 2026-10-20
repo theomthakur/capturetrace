@@ -35,6 +35,20 @@ The application is intentionally static and deterministic. It has no authenticat
 
 Every completed or partial run can be exported as a Markdown evidence report containing the scenario, integrity totals, event identities, measurements, outcomes, and validation rationale.
 
+## System design walkthrough
+
+The live site includes a full architecture narrative covering:
+
+1. The journey from connected tool to local outbox, validation gate, and trusted workflow state.
+2. The trust boundary and the event attributes checked before acceptance.
+3. Four core design decisions: store before send, stable retry identity, boundary validation, and visible uncertainty.
+4. The implemented prototype stack and a clearly separated production evolution path.
+5. A seven-slide presentation mode with keyboard and button navigation for a concise technical walkthrough.
+
+Open `https://capturetrace.vercel.app/?presentation=1` to launch directly into presentation mode.
+
+The current prototype uses semantic HTML, responsive CSS, vanilla JavaScript ES modules, deterministic domain logic, Node tests, GitHub, and Vercel. It has zero runtime packages and no external APIs.
+
 ## Scope boundary
 
 All devices, projects, measurements, event identifiers, and workflow behavior are synthetic. The code illustrates engineering principles rather than prescribing a production implementation.

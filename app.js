@@ -38,7 +38,15 @@ const elements = {
   scenarioExpected: $("#scenario-expected"),
   journey: [$("#journey-capture"), $("#journey-transport"), $("#journey-decision")],
   dialog: $("#notes-dialog"),
+  presentation: $("#presentation-dialog"),
+  slides: $$(".slide"),
+  slideCounter: $("#slide-counter"),
+  slideProgress: $("#slide-progress"),
+  previousSlide: $("#previous-slide"),
+  nextSlide: $("#next-slide"),
 };
+
+let activeSlide = 0;
 
 const fieldLabels = { width: "Opening width", height: "Opening height", depth: "Sill depth" };
 
@@ -60,6 +68,42 @@ $("#close-notes").addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => {
   if (event.target === elements.dialog) elements.dialog.close();
 });
+$("#open-presentation").addEventListener("click", openPresentation);
+$("#open-presentation-main").addEventListener("click", openPresentation);
+$("#close-presentation").addEventListener("click", () => elements.presentation.close());
+elements.previousSlide.addEventListener("click", () => showSlide(activeSlide - 1));
+elements.nextSlide.addEventListener("click", () => {
+  if (activeSlide === elements.slides.length - 1) {
+    elements.presentation.close();
+    return;
+  }
+  showSlide(activeSlide + 1);
+});
+elements.presentation.addEventListener("click", (event) => {
+  if (event.target === elements.presentation) elements.presentation.close();
+});
+elements.presentation.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowLeft") showSlide(activeSlide - 1);
+  if (event.key === "ArrowRight") showSlide(activeSlide + 1);
+});
+
+function openPresentation() {
+  showSlide(0);
+  elements.presentation.showModal();
+}
+
+function showSlide(index) {
+  activeSlide = Math.max(0, Math.min(index, elements.slides.length - 1));
+  elements.slides.forEach((slide, slideIndex) => {
+    const isActive = slideIndex === activeSlide;
+    slide.hidden = !isActive;
+    slide.classList.toggle("is-active", isActive);
+  });
+  elements.slideCounter.textContent = `${String(activeSlide + 1).padStart(2, "0")} / ${String(elements.slides.length).padStart(2, "0")}`;
+  elements.slideProgress.style.width = `${((activeSlide + 1) / elements.slides.length) * 100}%`;
+  elements.previousSlide.disabled = activeSlide === 0;
+  elements.nextSlide.innerHTML = activeSlide === elements.slides.length - 1 ? "Close" : `Next <span aria-hidden="true">→</span>`;
+}
 
 function later(callback, delay) {
   const timer = window.setTimeout(callback, delay);
@@ -248,8 +292,9 @@ function updateQueue(count) {
 
 function updateMetrics() {
   const summary = summarize(state.events);
-  for (const key of ["captured", "accepted", "duplicate", "review", "lost"]) {
-    $(`#metric-${key}`).textContent = summary[key];
+  const metricIds = { captured: "captured", accepted: "accepted", duplicate: "duplicate", review: "review", lost: "loss" };
+  for (const [key, id] of Object.entries(metricIds)) {
+    $(`#metric-${id}`).textContent = summary[key];
   }
   elements.exportReport.disabled = state.events.length === 0;
 }
@@ -312,3 +357,4 @@ function updateScenarioGuide() {
 
 updateScenarioGuide();
 resetWorkspace();
+if (new URLSearchParams(window.location.search).get("presentation") === "1") openPresentation();
