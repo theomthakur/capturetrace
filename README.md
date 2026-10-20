@@ -7,6 +7,9 @@ The prototype was prepared by Om Thakur for a technical conversation about conne
 ## Links
 
 - Live demo: https://capturetrace.vercel.app
+- Documentation: https://capturetrace.vercel.app/documentation.html
+- System design: https://capturetrace.vercel.app/architecture.html
+- Presentation: https://capturetrace.vercel.app/presentation.html
 - Source: https://github.com/theomthakur/capturetrace
 
 ## Run locally
@@ -35,17 +38,19 @@ The application is intentionally static and deterministic. It has no authenticat
 
 Every completed or partial run can be exported as a Markdown evidence report containing the scenario, integrity totals, event identities, measurements, outcomes, and validation rationale.
 
+## One pipeline, five independent tests
+
+CaptureTrace has one end-to-end reliability pipeline: capture, persist, deliver, validate, and decide. The five prepared scenarios are independent test runs through that shared pipeline. They are not five sequential workflow steps.
+
 ## System design walkthrough
 
-The live site includes a full architecture narrative covering:
+The live site separates the working demo from the supporting technical narrative:
 
-1. The journey from connected tool to local outbox, validation gate, and trusted workflow state.
-2. The trust boundary and the event attributes checked before acceptance.
-3. Four core design decisions: store before send, stable retry identity, boundary validation, and visible uncertainty.
-4. The implemented prototype stack and a clearly separated production evolution path.
-5. A seven-slide presentation mode with keyboard and button navigation for a concise technical walkthrough.
+1. The documentation page explains the purpose, end-to-end journey, interface, scenarios, evidence report, implementation, and talk track.
+2. The system design page covers the connected tool, event builder, durable outbox, validation gate, decision states, design choices, stack, and production evolution path.
+3. The eight-slide presentation provides a concise technical walkthrough with keyboard, button, and browser full-screen controls.
 
-Open `https://capturetrace.vercel.app/?presentation=1` to launch directly into presentation mode.
+Open `https://capturetrace.vercel.app/presentation.html` to launch presentation mode. Use the full-screen button or press `F`; use the arrow keys to move between slides.
 
 The current prototype uses semantic HTML, responsive CSS, vanilla JavaScript ES modules, deterministic domain logic, Node tests, GitHub, and Vercel. It has zero runtime packages and no external APIs.
 

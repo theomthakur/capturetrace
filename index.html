@@ -14,15 +14,15 @@
     <a class="skip-link" href="#sandbox">Skip to reliability sandbox</a>
 
     <header class="site-header">
-      <a class="brand" href="#top" aria-label="CaptureTrace home">
+      <a class="brand" href="index.html" aria-label="CaptureTrace home">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span>CaptureTrace</span>
       </a>
       <div class="header-meta">
-        <span class="live-dot" aria-hidden="true"></span>
-        <span>Deterministic demo</span>
-        <a class="text-link" href="#architecture">System design</a>
-        <button class="text-button" id="open-presentation" type="button">Presentation</button>
+        <a class="text-link is-current" href="index.html" aria-current="page">Demo</a>
+        <a class="text-link" href="documentation.html">Documentation</a>
+        <a class="text-link" href="architecture.html">System design</a>
+        <a class="text-link" href="presentation.html">Presentation</a>
         <button class="text-button" id="open-notes" type="button">System notes</button>
       </div>
     </header>
@@ -38,6 +38,31 @@
             <p>Explore how synthetic tool events survive offline capture, retries, duplicate delivery, and context mismatches before becoming trusted project data.</p>
             <p class="disclaimer">Independent prototype prepared for a technical conversation. Synthetic devices and measurements only.</p>
           </div>
+        </div>
+      </section>
+
+      <section class="flow-overview" aria-labelledby="flow-overview-title">
+        <div class="flow-overview-copy">
+          <span class="section-index">00</span>
+          <small>ONE PIPELINE, FIVE TESTS</small>
+          <h2 id="flow-overview-title">Every scenario starts at capture and ends with a visible decision.</h2>
+          <p>The scenarios are not five steps performed in order. They are five independent runs through the same end-to-end flow. Each run changes one condition so you can see how the system responds.</p>
+          <a href="documentation.html">Read the complete step-by-step guide <span aria-hidden="true">→</span></a>
+        </div>
+        <ol class="common-pipeline" aria-label="Common end-to-end measurement pipeline">
+          <li><span>01</span><div><small>CAPTURE</small><strong>Tool creates a measurement event</strong><p>The reading receives an ID, device, timestamp, field, units, and contract version.</p></div></li>
+          <li><span>02</span><div><small>PERSIST</small><strong>App stores it locally first</strong><p>The event remains recoverable even when delivery cannot happen immediately.</p></div></li>
+          <li><span>03</span><div><small>DELIVER</small><strong>Transport sends or retries it</strong><p>Reconnects and retries reuse the same event identity.</p></div></li>
+          <li><span>04</span><div><small>VALIDATE</small><strong>Receiver checks the full contract</strong><p>Identity, schema, units, context, and sequence must be acceptable.</p></div></li>
+          <li><span>05</span><div><small>DECIDE</small><strong>Workflow exposes the outcome</strong><p>The event is accepted, queued, suppressed, or held with a reason.</p></div></li>
+        </ol>
+        <div class="scenario-branches">
+          <strong>What changes between runs?</strong>
+          <span>Clean capture: nothing fails</span>
+          <span>Offline: delivery waits</span>
+          <span>Lost acknowledgment: delivery repeats</span>
+          <span>Wrong units: validation fails</span>
+          <span>Old contract: schema validation fails</span>
         </div>
       </section>
 
@@ -188,63 +213,11 @@
         </div>
       </section>
 
-      <section class="architecture-section" id="architecture" aria-labelledby="architecture-title">
-        <div class="architecture-heading">
-          <div>
-            <span class="section-index">03</span>
-            <small>SYSTEM DESIGN</small>
-          </div>
-          <h2 id="architecture-title">From a physical reading to a trusted project value.</h2>
-          <p>The prototype separates capture, delivery, validation, and workflow state. That separation makes a failure visible and recoverable instead of letting it quietly change the record.</p>
-          <button class="presentation-button" id="open-presentation-main" type="button"><span>Open presentation</span><span aria-hidden="true">↗</span></button>
-        </div>
-
-        <div class="system-flow" aria-label="CaptureTrace system flow">
-          <article class="flow-node edge-node"><span>01</span><small>FIELD EDGE</small><h3>Connected tool</h3><p>Creates the measurement and stable event identity at capture time.</p></article>
-          <div class="flow-connector"><span>BLE</span><i aria-hidden="true">→</i></div>
-          <article class="flow-node edge-node"><span>02</span><small>FIELD EDGE</small><h3>Local outbox</h3><p>Stores the event before delivery so a weak network cannot erase the work.</p></article>
-          <div class="flow-connector boundary"><span>NETWORK</span><i aria-hidden="true">→</i></div>
-          <article class="flow-node service-node"><span>03</span><small>INGESTION</small><h3>Validation gate</h3><p>Checks identity, schema version, units, context, and sequence.</p></article>
-          <div class="flow-connector"><span>DECISION</span><i aria-hidden="true">→</i></div>
-          <article class="flow-node service-node"><span>04</span><small>WORKFLOW</small><h3>Trusted state</h3><p>Accepts, suppresses, queues, or holds the event with an explicit reason.</p></article>
-        </div>
-
-        <div class="boundary-note"><span>Trust boundary</span><p>The receiver never trusts a number by itself. It trusts a validated event containing the number, origin, time, field context, and contract version.</p></div>
-
-        <div class="architecture-grid">
-          <article class="design-decisions">
-            <div class="subsection-heading"><small>CORE DECISIONS</small><h3>Why the system behaves this way</h3></div>
-            <ol>
-              <li><span>01</span><div><strong>Store before send</strong><p>The app commits locally first. Delivery becomes retryable work, not a one-time hope.</p></div></li>
-              <li><span>02</span><div><strong>Retry with the same identity</strong><p>A repeated delivery cannot create a second measurement because the event ID does not change.</p></div></li>
-              <li><span>03</span><div><strong>Validate at the boundary</strong><p>Units and schema versions are checked before a value can enter the form.</p></div></li>
-              <li><span>04</span><div><strong>Make uncertainty visible</strong><p>Unknown input enters review with a reason. The system does not silently convert or guess.</p></div></li>
-            </ol>
-          </article>
-
-          <article class="stack-card">
-            <div class="subsection-heading"><small>IMPLEMENTED PROTOTYPE</small><h3>Tech stack</h3></div>
-            <dl>
-              <div><dt>Interface</dt><dd>Semantic HTML and responsive CSS</dd></div>
-              <div><dt>Interaction</dt><dd>Vanilla JavaScript with ES modules</dd></div>
-              <div><dt>Domain logic</dt><dd>Deterministic event validation and summaries</dd></div>
-              <div><dt>Verification</dt><dd>Node test runner and static integrity checks</dd></div>
-              <div><dt>Delivery</dt><dd>GitHub source and Vercel static hosting</dd></div>
-              <div><dt>Dependencies</dt><dd>Zero runtime packages and zero external APIs</dd></div>
-            </dl>
-          </article>
-        </div>
-
-        <div class="lanes" aria-label="Prototype and production architecture comparison">
-          <article>
-            <div><small>WHAT EXISTS NOW</small><h3>Browser prototype</h3></div>
-            <ul><li>Synthetic tool and project events</li><li>In-memory outbox and receiver behavior</li><li>Five deterministic failure scenarios</li><li>Exportable Markdown evidence</li></ul>
-          </article>
-          <article class="production-lane">
-            <div><small>HOW IT WOULD EVOLVE</small><h3>Production lane</h3></div>
-            <ul><li>BLE adapter with durable device storage</li><li>Encrypted local database and background sync</li><li>Authenticated ingestion API and idempotency store</li><li>Observable workflow service with audit retention</li></ul>
-          </article>
-        </div>
+      <section class="continue-section" aria-label="Continue exploring CaptureTrace">
+        <div><span class="section-index">03</span><h2>Continue past the simulation.</h2><p>The demo shows behavior. The supporting pages explain every step, the design choices, and the interview-ready story.</p></div>
+        <a href="documentation.html"><small>FULL REFERENCE</small><strong>Documentation</strong><span>Every screen, state, and scenario →</span></a>
+        <a href="architecture.html"><small>TECHNICAL VIEW</small><strong>System design</strong><span>Components, flows, and production path →</span></a>
+        <a href="presentation.html"><small>LIVE WALKTHROUGH</small><strong>Presentation</strong><span>Dedicated slides with full screen →</span></a>
       </section>
     </main>
 
@@ -264,42 +237,5 @@
       <div class="dialog-note"><strong>Scope boundary</strong><p>This is a browser-only simulation. It is not a BLE implementation, production architecture recommendation, or representation of another company's internal system.</p></div>
     </dialog>
 
-    <dialog id="presentation-dialog" class="presentation-dialog" aria-labelledby="presentation-title">
-      <div class="presentation-shell">
-        <header class="presentation-header">
-          <div><strong id="presentation-title">CaptureTrace</strong><span>System design walkthrough</span></div>
-          <div><span id="slide-counter">01 / 07</span><button id="close-presentation" class="icon-button" type="button" aria-label="Close presentation">×</button></div>
-        </header>
-        <div class="slide-progress" aria-hidden="true"><i id="slide-progress"></i></div>
-        <div class="slides">
-          <section class="slide is-active" data-slide="0">
-            <small>01 / THE QUESTION</small><h2>Can a field measurement remain trustworthy when the network and software are imperfect?</h2><p>CaptureTrace is a focused reliability sandbox for the moment physical work becomes digital project data.</p>
-          </section>
-          <section class="slide" data-slide="1" hidden>
-            <small>02 / THE INVARIANT</small><h2>No measurement is silently lost, duplicated, converted, or assigned to the wrong field.</h2><div class="slide-points"><span>Stable identity</span><span>Explicit context</span><span>Visible state</span><span>Safe ambiguity</span></div>
-          </section>
-          <section class="slide" data-slide="2" hidden>
-            <small>03 / THE FLOW</small><h2>Capture locally. Deliver safely. Validate once. Explain every decision.</h2><div class="mini-flow"><span>Tool</span><i>→</i><span>Outbox</span><i>→</i><span>Validation</span><i>→</i><span>Workflow</span></div><p>Each stage owns one responsibility, which keeps transport failure separate from data correctness.</p>
-          </section>
-          <section class="slide" data-slide="3" hidden>
-            <small>04 / THE SCENARIOS</small><h2>Five situations expose five distinct system behaviors.</h2><div class="scenario-matrix"><span>Clean capture<strong>Accept</strong></span><span>Offline jobsite<strong>Queue and replay</strong></span><span>Lost acknowledgment<strong>Suppress retry</strong></span><span>Wrong units<strong>Review</strong></span><span>Old contract<strong>Review</strong></span></div>
-          </section>
-          <section class="slide" data-slide="4" hidden>
-            <small>05 / THE DECISIONS</small><h2>The design favors recoverability over optimistic success.</h2><ul><li>Store before attempting transport.</li><li>Reuse identity across every retry.</li><li>Validate context at the receiving boundary.</li><li>Surface uncertainty to the person doing the work.</li></ul>
-          </section>
-          <section class="slide" data-slide="5" hidden>
-            <small>06 / THE BUILD</small><h2>A small stack keeps the reliability logic inspectable.</h2><div class="slide-stack"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>ES modules</span><span>Node tests</span><span>GitHub</span><span>Vercel</span></div><p>No runtime dependencies, external APIs, credentials, analytics, or live device connection.</p>
-          </section>
-          <section class="slide" data-slide="6" hidden>
-            <small>07 / THE HANDOFF</small><h2>The prototype starts a technical conversation. It does not pretend to know the production system.</h2><p>A production version would add BLE integration, durable encrypted storage, background synchronization, authenticated ingestion, persistent idempotency, and operational observability.</p><strong class="closing-question">Where would these guarantees fit into your actual field workflow?</strong>
-          </section>
-        </div>
-        <footer class="presentation-controls">
-          <button id="previous-slide" type="button"><span aria-hidden="true">←</span> Previous</button>
-          <span>Use arrow keys to navigate</span>
-          <button id="next-slide" type="button">Next <span aria-hidden="true">→</span></button>
-        </footer>
-      </div>
-    </dialog>
   </body>
 </html>

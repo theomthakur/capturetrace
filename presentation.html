@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Full-screen CaptureTrace system design presentation." />
+    <meta name="theme-color" content="#111714" />
+    <title>Presentation | CaptureTrace</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23111714'/%3E%3Ccircle cx='20' cy='34' r='5' fill='%23f2f0e9'/%3E%3Ccircle cx='34' cy='20' r='5' fill='%23f2f0e9'/%3E%3Ccircle cx='45' cy='43' r='6' fill='%23ddff40'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="presentation.js"></script>
+  </head>
+  <body class="presentation-page">
+    <main class="presentation-shell standalone-presentation" id="presentation">
+      <header class="presentation-header">
+        <div><a href="index.html" aria-label="Return to CaptureTrace demo">CaptureTrace</a><span>System design walkthrough</span></div>
+        <div><span id="slide-counter" aria-live="polite">01 / 08</span><button id="fullscreen-button" class="fullscreen-button" type="button"><span aria-hidden="true">⛶</span> Enter full screen</button></div>
+      </header>
+      <div class="slide-progress" aria-hidden="true"><i id="slide-progress"></i></div>
+      <div class="slides">
+        <section class="slide is-active" data-slide="0"><small>01 / THE QUESTION</small><h1>Can a field measurement remain trustworthy when the network and software are imperfect?</h1><p>CaptureTrace explores the moment physical work becomes digital project data.</p></section>
+        <section class="slide" data-slide="1" hidden><small>02 / THE MODEL</small><h1>One end-to-end pipeline. Five independent test scenarios.</h1><p>The buttons are not consecutive steps. Every scenario starts from an empty workspace and changes one condition inside the same flow.</p><div class="slide-points"><span>Capture</span><span>Persist</span><span>Deliver</span><span>Validate</span><span>Decide</span></div></section>
+        <section class="slide" data-slide="2" hidden><small>03 / THE INVARIANT</small><h1>No measurement is silently lost, duplicated, converted, or assigned to the wrong field.</h1><div class="slide-points"><span>Stable identity</span><span>Explicit context</span><span>Visible state</span><span>Safe ambiguity</span></div></section>
+        <section class="slide" data-slide="3" hidden><small>04 / THE FLOW</small><h1>Capture locally. Deliver safely. Validate once. Explain every decision.</h1><div class="mini-flow"><span>Tool</span><i>→</i><span>Outbox</span><i>→</i><span>Validation</span><i>→</i><span>Workflow</span></div><p>Each stage owns one responsibility, keeping transport failure separate from data correctness.</p></section>
+        <section class="slide" data-slide="4" hidden><small>05 / THE SCENARIOS</small><h1>Five disturbances expose five system behaviors.</h1><div class="scenario-matrix"><span>Clean capture<strong>Accept</strong></span><span>Offline jobsite<strong>Queue and replay</strong></span><span>Lost acknowledgment<strong>Suppress retry</strong></span><span>Wrong units<strong>Review</strong></span><span>Old contract<strong>Review</strong></span></div></section>
+        <section class="slide" data-slide="5" hidden><small>06 / THE DECISIONS</small><h1>The design favors recoverability over optimistic success.</h1><ul><li>Store before attempting transport.</li><li>Reuse identity across every retry.</li><li>Validate context at the receiving boundary.</li><li>Surface uncertainty to the person doing the work.</li></ul></section>
+        <section class="slide" data-slide="6" hidden><small>07 / THE BUILD</small><h1>A small stack keeps the reliability logic inspectable.</h1><div class="slide-stack"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>ES modules</span><span>Node tests</span><span>GitHub</span><span>Vercel</span></div><p>No runtime dependencies, external APIs, credentials, analytics, or live device connection.</p></section>
+        <section class="slide" data-slide="7" hidden><small>08 / THE HANDOFF</small><h1>The prototype starts a technical conversation. It does not pretend to know the production system.</h1><p>A production version would add BLE integration, encrypted local storage, background synchronization, authenticated ingestion, persistent idempotency, and operational observability.</p><strong class="closing-question">Where would these guarantees fit into your actual field workflow?</strong></section>
+      </div>
+      <footer class="presentation-controls"><button id="previous-slide" type="button"><span aria-hidden="true">←</span> Previous</button><span>Arrow keys navigate. F toggles full screen. Escape exits full screen.</span><button id="next-slide" type="button">Next <span aria-hidden="true">→</span></button></footer>
+    </main>
+  </body>
+</html>
