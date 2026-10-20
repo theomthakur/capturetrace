@@ -18,6 +18,7 @@ const elements = {
   capture: $("#capture-button"),
   network: $("#network-toggle"),
   reset: $("#reset-button"),
+  exportReport: $("#export-report"),
   traceList: $("#trace-list"),
   traceEmpty: $("#trace-empty"),
   queue: $("#queue-banner"),
@@ -44,6 +45,7 @@ elements.buttons.forEach((button) => button.addEventListener("click", () => {
 
 elements.run.addEventListener("click", runScenario);
 elements.reset.addEventListener("click", resetWorkspace);
+elements.exportReport.addEventListener("click", exportRunReport);
 elements.capture.addEventListener("click", manualCapture);
 elements.network.addEventListener("click", toggleNetwork);
 $("#open-notes").addEventListener("click", () => elements.dialog.showModal());
@@ -87,6 +89,7 @@ function resetWorkspace() {
   setOnline(true);
   elements.run.disabled = false;
   elements.run.querySelector("span:first-child").textContent = "Run scenario";
+  elements.exportReport.disabled = true;
   elements.traceList.replaceChildren();
   elements.traceEmpty.hidden = false;
   elements.queue.hidden = true;
@@ -181,19 +184,20 @@ function updateDevice(item) {
 
 function appendTrace(item) {
   elements.traceEmpty.hidden = true;
-  const result = item.outcome === "queued"
-    ? { outcome: "queued", reason: "Committed locally; waiting for connectivity" }
-    : item.outcome === "duplicate"
-      ? validateEvent(item, new Set([item.id]))
-      : item.outcome === "review"
-        ? validateEvent(item)
-        : validateEvent(item);
+  const result = explainEvent(item);
   const li = document.createElement("li");
   li.dataset.eventId = item.id;
   li.dataset.outcome = item.outcome;
   li.innerHTML = traceMarkup(item, result.reason);
   elements.traceList.append(li);
   elements.traceList.scrollTo({ top: elements.traceList.scrollHeight, behavior: "smooth" });
+}
+
+function explainEvent(item) {
+  if (item.outcome === "queued") return { outcome: "queued", reason: "Committed locally; waiting for connectivity" };
+  if (item.outcome === "duplicate") return validateEvent(item, new Set([item.id]));
+  if (item.replayed) return { outcome: "accepted", reason: "Replayed once; identity, contract, units, and context verified" };
+  return validateEvent(item);
 }
 
 function updateTraceItem(item) {
@@ -238,6 +242,47 @@ function updateMetrics() {
   for (const key of ["captured", "accepted", "duplicate", "review", "lost"]) {
     $(`#metric-${key}`).textContent = summary[key];
   }
+  elements.exportReport.disabled = state.events.length === 0;
+}
+
+function exportRunReport() {
+  if (!state.events.length) return;
+  const scenario = SCENARIOS[state.scenario];
+  const summary = summarize(state.events);
+  const lines = [
+    `# CaptureTrace run report: ${scenario.label}`,
+    "",
+    `**Generated:** ${new Date().toISOString()}`,
+    `**Scenario:** ${scenario.description}`,
+    "",
+    "## Integrity summary",
+    "",
+    `- Captured: ${summary.captured}`,
+    `- Accepted: ${summary.accepted}`,
+    `- Duplicate deliveries suppressed: ${summary.duplicate}`,
+    `- Held for review: ${summary.review}`,
+    `- Silently lost: ${summary.lost}`,
+    "",
+    "## Event evidence",
+    "",
+    "| Sequence | Event ID | Field | Measurement | State | Evidence |",
+    "|---:|---|---|---|---|---|",
+    ...state.events.map((item) => {
+      const result = explainEvent(item);
+      const stateLabel = item.replayed ? "accepted after replay" : item.outcome;
+      return `| ${item.sequence} | ${item.id} | ${fieldLabels[item.field]} | ${displayMeasurement(item)} | ${stateLabel} | ${result.reason} |`;
+    }),
+    "",
+    "## Scope",
+    "",
+    "Independent browser prototype using synthetic devices and measurements. This report does not represent a production system or REEKON Tools' internal architecture.",
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `capturetrace-${state.scenario}-run.md`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 function updateProgress() {

@@ -48,7 +48,7 @@ export function summarize(events) {
 }
 
 export function validateEvent(candidate, seen = new Set()) {
-  if (seen.has(candidate.id)) return { outcome: "duplicate", reason: "Stable event ID already accepted" };
+  if (seen.has(candidate.id)) return { outcome: "duplicate", reason: "Acknowledgement was lost; retry reused an accepted event ID, so no second write occurred" };
   if (candidate.contract !== "measurement.v3") return { outcome: "review", reason: "Unsupported data contract" };
   if (candidate.unit !== "in") return { outcome: "review", reason: `Expected inches; received ${candidate.unit}` };
   if (!candidate.id || !candidate.device || !candidate.field) return { outcome: "review", reason: "Required context is missing" };

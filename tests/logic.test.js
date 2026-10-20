@@ -14,7 +14,9 @@ test("retry scenario counts unique captures separately from duplicate delivery",
 
 test("duplicate event identities are suppressed", () => {
   const event = SCENARIOS.retry.events[0];
-  assert.equal(validateEvent(event, new Set([event.id])).outcome, "duplicate");
+  const result = validateEvent(event, new Set([event.id]));
+  assert.equal(result.outcome, "duplicate");
+  assert.match(result.reason, /no second write/);
 });
 
 test("unexpected units enter review instead of being guessed", () => {

@@ -131,6 +131,10 @@ h1 em { font-style: normal; color: var(--green); }
 
 .icon-button { width: 30px; height: 30px; border: 1px solid var(--line); display: grid; place-items: center; border-radius: 50%; }
 .icon-button:hover { border-color: var(--ink); }
+.panel-tools { display: flex; align-items: center; gap: .45rem; }
+.export-button { min-height: 30px; padding: 0 .65rem; border: 1px solid var(--line); background: transparent; font: .56rem var(--mono); text-transform: uppercase; cursor: pointer; }
+.export-button:hover:not(:disabled) { border-color: var(--ink); background: var(--signal); }
+.export-button:disabled { color: var(--muted); cursor: not-allowed; opacity: .55; }
 .trace-panel { display: flex; flex-direction: column; }
 .trace-empty { margin: auto; text-align: center; max-width: 230px; padding: 2rem; }
 .trace-empty strong { font-size: .78rem; }

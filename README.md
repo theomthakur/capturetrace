@@ -1,6 +1,6 @@
 # CaptureTrace
 
-CaptureTrace is an independent, browser-only reliability sandbox for synthetic connected field measurements. It demonstrates local-first capture, ordered replay, idempotent duplicate suppression, explicit context, unit validation, and human-visible review states.
+CaptureTrace is an independent, browser-only reliability sandbox for synthetic connected field measurements. It demonstrates local-first capture, ordered replay, idempotent duplicate suppression, explicit context, unit validation, human-visible review states, and exportable run evidence.
 
 The prototype was prepared by Om Thakur for a technical conversation about connected hardware/software systems. It is not affiliated with, endorsed by, or representative of REEKON Tools or any other company's internal architecture.
 
@@ -30,6 +30,8 @@ The application is intentionally static and deterministic. It has no authenticat
 1. Normal connected capture.
 2. Offline capture followed by ordered replay after reconnection.
 3. Duplicate retry suppression and an unexpected-unit review gate.
+
+Every completed or partial run can be exported as a Markdown evidence report containing the scenario, integrity totals, event identities, measurements, outcomes, and validation rationale.
 
 ## Scope boundary
 
