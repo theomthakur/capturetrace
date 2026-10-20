@@ -4,6 +4,11 @@ CaptureTrace is an independent, browser-only reliability sandbox for synthetic c
 
 The prototype was prepared by Om Thakur for a technical conversation about connected hardware/software systems. It is not affiliated with, endorsed by, or representative of REEKON Tools or any other company's internal architecture.
 
+## Links
+
+- Live demo: https://capturetrace.vercel.app
+- Source: https://github.com/theomthakur/capturetrace
+
 ## Run locally
 
 ```bash
