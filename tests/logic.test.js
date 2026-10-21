@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SCENARIOS, displayMeasurement, summarize, validateEvent } from "../logic.js";
+import { SCENARIOS, displayMeasurement, getRunDecision, summarize, validateEvent } from "../logic.js";
 
 test("lost acknowledgment counts one capture and suppresses the retry", () => {
   assert.deepEqual(summarize(SCENARIOS.acknowledgement.events), {
@@ -40,4 +40,21 @@ test("accepted events have explicit identity and context", () => {
 
 test("fractional measurements render for field readability", () => {
   assert.equal(displayMeasurement(SCENARIOS.normal.events[0]), "36 ⅝ IN");
+});
+
+test("a completed offline replay produces a clear field decision", () => {
+  const replayed = SCENARIOS.offline.events.map((item) => ({ ...item, outcome: "accepted", replayed: true }));
+  assert.deepEqual(getRunDecision(SCENARIOS.offline, replayed), {
+    status: "Ready after sync",
+    action: "Continue the survey. The queued measurements were replayed and verified.",
+    tone: "clear",
+  });
+});
+
+test("a unit mismatch produces a hold decision and operator action", () => {
+  assert.deepEqual(getRunDecision(SCENARIOS.units, SCENARIOS.units.events), {
+    status: "Hold this field",
+    action: "Confirm the tool mode and intended units before approving the value.",
+    tone: "hold",
+  });
 });

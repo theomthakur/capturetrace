@@ -3,10 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="CaptureTrace is an independent reliability sandbox for synthetic connected field measurements." />
+    <meta name="description" content="Test how connected field measurements behave when internet drops, retries repeat, units differ, or an older app sends data." />
     <meta name="theme-color" content="#111714" />
-    <title>CaptureTrace: Connected measurement reliability sandbox</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23111714'/%3E%3Ccircle cx='20' cy='34' r='5' fill='%23f2f0e9'/%3E%3Ccircle cx='34' cy='20' r='5' fill='%23f2f0e9'/%3E%3Ccircle cx='45' cy='43' r='6' fill='%23ddff40'/%3E%3C/svg%3E" />
+    <meta property="og:title" content="CaptureTrace | Connected measurement demo" />
+    <meta property="og:description" content="A hands-on demo of safe offline capture, retries, validation, and field decisions." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://capturetrace.vercel.app/" />
+    <meta property="og:image" content="https://capturetrace.vercel.app/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://capturetrace.vercel.app/" />
+    <title>CaptureTrace | Connected measurement demo</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
     <script type="module" src="app.js"></script>
   </head>
@@ -35,7 +42,7 @@
             <h1 id="hero-title">A measurement is only useful if it arrives <em>intact.</em></h1>
           </div>
           <div class="hero-copy">
-            <p>Explore how synthetic tool events survive offline capture, retries, duplicate delivery, and context mismatches before becoming trusted project data.</p>
+            <p>See exactly what happens when a field measurement is captured offline, delivered twice, sent in the wrong units, or produced by an older app.</p>
             <p class="disclaimer">Independent prototype prepared for a technical conversation. Synthetic devices and measurements only.</p>
           </div>
         </div>
@@ -102,6 +109,12 @@
         <div><span id="metric-duplicate">0</span><small>Duplicate suppressed</small></div>
         <div><span id="metric-review">0</span><small>Held for review</small></div>
         <div class="integrity-score"><span id="metric-loss">0</span><small>Silently lost</small></div>
+      </section>
+
+      <section class="run-decision" id="run-decision" data-tone="ready" aria-live="polite" aria-label="Field decision">
+        <div class="decision-label"><small>FIELD DECISION</small><strong id="decision-status">Not run yet</strong></div>
+        <div class="decision-next"><small>WHAT TO DO NEXT</small><p id="decision-action">Choose a situation and select Show this scenario.</p></div>
+        <button id="copy-scenario-link" type="button">Copy scenario link</button>
       </section>
 
       <section class="sandbox" id="sandbox" aria-label="Measurement reliability sandbox">
@@ -221,9 +234,10 @@
       </section>
     </main>
 
-    <footer>
+    <footer class="site-footer">
       <div><strong>CaptureTrace</strong><span>Independent engineering prototype by Om Thakur</span></div>
-      <p>Built to explore reliability at the physical-to-digital boundary. No affiliation with or representation of REEKON Tools.</p>
+      <p>Built to explore reliable field measurements. No affiliation with or representation of REEKON Tools.</p>
+      <nav aria-label="Om Thakur links"><a href="https://theomthakur.github.io/portfolio" target="_blank" rel="noopener noreferrer">Portfolio ↗</a><a href="https://github.com/theomthakur/capturetrace" target="_blank" rel="noopener noreferrer">Source ↗</a><a href="https://www.linkedin.com/in/theomthakur/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></nav>
     </footer>
 
     <dialog id="notes-dialog">

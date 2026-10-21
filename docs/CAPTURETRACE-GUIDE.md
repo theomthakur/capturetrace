@@ -160,9 +160,10 @@ The top counters show captured, accepted, duplicate, review, and silently lost t
 
 ## 6. Evidence report
 
-After at least one event exists, Export report downloads a Markdown file containing:
+After at least one event exists, Export report downloads a Markdown handoff containing:
 
-- Scenario and generation time
+- Scenario, job, and generation time
+- Final field decision and required next action
 - Integrity totals
 - Event sequence
 - Event ID

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f2f0e9"/>
+  <path d="M0 0h1200v72H0z" fill="#111714"/>
+  <circle cx="72" cy="36" r="13" fill="#ddff40"/>
+  <text x="105" y="45" fill="#ffffff" font-family="Arial, sans-serif" font-size="26" font-weight="700">CaptureTrace</text>
+  <text x="72" y="194" fill="#28644d" font-family="monospace" font-size="19" letter-spacing="3">CONNECTED FIELD MEASUREMENTS</text>
+  <text x="72" y="285" fill="#111714" font-family="Arial, sans-serif" font-size="68" font-weight="800">Capture once.</text>
+  <text x="72" y="365" fill="#111714" font-family="Arial, sans-serif" font-size="68" font-weight="800">Know what happened.</text>
+  <text x="72" y="435" fill="#59625d" font-family="Arial, sans-serif" font-size="25">Offline capture, safe retries, validation, and clear field decisions.</text>
+  <g transform="translate(835 190)">
+    <rect width="285" height="250" rx="20" fill="#111714"/>
+    <text x="28" y="48" fill="#9ca29e" font-family="monospace" font-size="16">FIELD TOOL CT-07</text>
+    <text x="36" y="132" fill="#ddff40" font-family="monospace" font-size="58" font-weight="700">36 ⅝</text>
+    <text x="220" y="132" fill="#ffffff" font-family="monospace" font-size="19">IN</text>
+    <path d="M28 171h229" stroke="#39403c"/>
+    <circle cx="48" cy="211" r="12" fill="#ddff40"/>
+    <text x="75" y="218" fill="#ffffff" font-family="Arial, sans-serif" font-size="18">Trusted</text>
+  </g>
+  <text x="72" y="562" fill="#69716c" font-family="Arial, sans-serif" font-size="20">Independent prototype by Om Thakur</text>
+</svg>

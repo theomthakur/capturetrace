@@ -9,7 +9,7 @@ const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const js = readFileSync(new URL("../app.js", import.meta.url), "utf8");
 const presentationJs = readFileSync(new URL("../presentation.js", import.meta.url), "utf8");
 
-const required = ["CaptureTrace", "Show this scenario", "Offline jobsite", "Lost acknowledgment", "Wrong units", "Old app contract", "Export report", "Independent prototype", "ONE PIPELINE, FIVE TESTS", "Read the complete step-by-step guide"];
+const required = ["CaptureTrace", "Show this scenario", "Offline jobsite", "Lost acknowledgment", "Wrong units", "Old app contract", "Export report", "Independent prototype", "ONE PIPELINE, FIVE TESTS", "Read the complete step-by-step guide", "FIELD DECISION", "Copy scenario link"];
 for (const text of required) {
   if (!html.includes(text)) throw new Error(`Missing required copy: ${text}`);
 }
@@ -17,6 +17,8 @@ if (!html.includes('name="viewport"')) throw new Error("Missing responsive viewp
 if (!css.includes("prefers-reduced-motion")) throw new Error("Missing reduced-motion support");
 if (!js.includes("resetWorkspace")) throw new Error("Interactive controller is missing");
 if (!js.includes("exportRunReport")) throw new Error("Run-report export is missing");
+if (!js.includes("copyScenarioLink") || !js.includes("getRunDecision")) throw new Error("Shareable scenario or decision output is missing");
+if (!js.includes("scenario.events.map((item) => ({ ...item }))")) throw new Error("Scenario runs must clone prepared events before changing state");
 if (!html.includes('id="metric-loss"') || !js.includes('lost: "loss"')) throw new Error("Loss metric binding is inconsistent");
 
 if (!architecture.includes("System design") || !architecture.includes("REFERENCE ARCHITECTURE")) {
@@ -38,6 +40,16 @@ for (const page of [html, architecture, documentation, presentation]) {
     const targetUrl = new URL(`../${target}`, import.meta.url);
     if (!existsSync(fileURLToPath(targetUrl))) throw new Error(`Broken internal page link: ${target}`);
   }
+}
+
+for (const page of [html, architecture, documentation]) {
+  if (!page.includes("theomthakur.github.io/portfolio") || !page.includes("github.com/theomthakur/capturetrace") || !page.includes("linkedin.com/in/theomthakur")) {
+    throw new Error("Professional footer links are incomplete");
+  }
+}
+
+for (const source of [html, architecture, documentation, presentation, js, css]) {
+  if (/[—–]/.test(source)) throw new Error("Dash punctuation found; use direct sentence structure instead");
 }
 
 console.log("Static integrity checks passed.");

@@ -1,4 +1,4 @@
-import { SCENARIOS, displayMeasurement, summarize, validateEvent } from "./logic.js";
+import { SCENARIOS, displayMeasurement, getRunDecision, summarize, validateEvent } from "./logic.js";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -19,6 +19,7 @@ const elements = {
   network: $("#network-toggle"),
   reset: $("#reset-button"),
   exportReport: $("#export-report"),
+  copyLink: $("#copy-scenario-link"),
   traceList: $("#trace-list"),
   traceEmpty: $("#trace-empty"),
   queue: $("#queue-banner"),
@@ -38,6 +39,9 @@ const elements = {
   scenarioExpected: $("#scenario-expected"),
   journey: [$("#journey-capture"), $("#journey-transport"), $("#journey-decision")],
   dialog: $("#notes-dialog"),
+  decisionPanel: $("#run-decision"),
+  decisionStatus: $("#decision-status"),
+  decisionAction: $("#decision-action"),
 };
 
 const fieldLabels = { width: "Opening width", height: "Opening height", depth: "Sill depth" };
@@ -47,12 +51,14 @@ elements.buttons.forEach((button) => button.addEventListener("click", () => {
   state.scenario = button.dataset.scenario;
   elements.buttons.forEach((candidate) => candidate.classList.toggle("is-active", candidate === button));
   updateScenarioGuide();
+  updateScenarioUrl();
   resetWorkspace();
 }));
 
 elements.run.addEventListener("click", runScenario);
 elements.reset.addEventListener("click", resetWorkspace);
 elements.exportReport.addEventListener("click", exportRunReport);
+elements.copyLink.addEventListener("click", copyScenarioLink);
 elements.capture.addEventListener("click", manualCapture);
 elements.network.addEventListener("click", toggleNetwork);
 $("#open-notes").addEventListener("click", () => elements.dialog.showModal());
@@ -103,6 +109,7 @@ function resetWorkspace() {
   $$(".field-row").forEach((row) => setField(row.dataset.field, null));
   updateMetrics();
   updateProgress();
+  updateDecision();
   updateDevice({ value: 36.625, unit: "in", field: "width", sequence: 421 });
 }
 
@@ -113,10 +120,11 @@ function runScenario() {
   elements.run.disabled = true;
   elements.run.querySelector("span:first-child").textContent = "Running…";
   const scenario = SCENARIOS[state.scenario];
+  const runEvents = scenario.events.map((item) => ({ ...item }));
 
   if (state.scenario === "offline") {
     setOnline(false);
-    scenario.events.forEach((item, index) => later(() => ingest(item), 450 + index * 650));
+    runEvents.forEach((item, index) => later(() => ingest(item), 450 + index * 650));
     later(() => {
       setOnline(true);
       elements.queueCopy.textContent = "Connectivity restored. Replaying queued events in sequence.";
@@ -127,8 +135,8 @@ function runScenario() {
   }
 
   const interval = state.scenario === "acknowledgement" ? 900 : 700;
-  scenario.events.forEach((item, index) => later(() => ingest(item), 400 + index * interval));
-  later(finishRun, 700 + scenario.events.length * interval);
+  runEvents.forEach((item, index) => later(() => ingest(item), 400 + index * interval));
+  later(finishRun, 700 + runEvents.length * interval);
 }
 
 function finishRun() {
@@ -145,6 +153,7 @@ function replayQueued(queued) {
     setField(item.field, item);
     updateMetrics();
     updateProgress();
+    updateDecision();
     const remaining = state.events.filter((candidate) => candidate.outcome === "queued").length;
     updateQueue(remaining);
   }, 500 + index * 650));
@@ -179,6 +188,7 @@ function ingest(item) {
   updateMetrics();
   updateProgress();
   updateQueue(state.events.filter((candidate) => candidate.outcome === "queued").length);
+  updateDecision();
 }
 
 function updateDevice(item) {
@@ -259,11 +269,18 @@ function exportRunReport() {
   if (!state.events.length) return;
   const scenario = SCENARIOS[state.scenario];
   const summary = summarize(state.events);
+  const decision = getRunDecision(scenario, state.events);
   const lines = [
     `# CaptureTrace run report: ${scenario.label}`,
     "",
     `**Generated:** ${new Date().toISOString()}`,
     `**Scenario:** ${scenario.description}`,
+    `**Job:** JOB-2407, Window opening survey, South elevation, Level 2`,
+    "",
+    "## Field decision",
+    "",
+    `**Status:** ${decision.status}`,
+    `**Next action:** ${decision.action}`,
     "",
     "## Integrity summary",
     "",
@@ -295,6 +312,31 @@ function exportRunReport() {
   URL.revokeObjectURL(link.href);
 }
 
+function updateDecision() {
+  const decision = getRunDecision(SCENARIOS[state.scenario], state.events);
+  elements.decisionPanel.dataset.tone = decision.tone;
+  elements.decisionStatus.textContent = decision.status;
+  elements.decisionAction.textContent = decision.action;
+}
+
+function updateScenarioUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.set("scenario", state.scenario);
+  window.history.replaceState({}, "", url);
+}
+
+async function copyScenarioLink() {
+  const url = new URL(window.location.href);
+  url.searchParams.set("scenario", state.scenario);
+  try {
+    await navigator.clipboard.writeText(url.toString());
+    elements.copyLink.textContent = "Link copied";
+  } catch {
+    window.prompt("Copy this scenario link", url.toString());
+  }
+  later(() => { elements.copyLink.textContent = "Copy scenario link"; }, 1800);
+}
+
 function updateProgress() {
   const trusted = $$(".field-status.accepted").length;
   elements.progressCopy.textContent = `${trusted} of 3 fields trusted`;
@@ -311,5 +353,10 @@ function updateScenarioGuide() {
   elements.journey.forEach((element, index) => { element.textContent = scenario.journey[index]; });
 }
 
+const requestedScenario = new URLSearchParams(window.location.search).get("scenario");
+if (requestedScenario && SCENARIOS[requestedScenario]) {
+  state.scenario = requestedScenario;
+  elements.buttons.forEach((button) => button.classList.toggle("is-active", button.dataset.scenario === requestedScenario));
+}
 updateScenarioGuide();
 resetWorkspace();
