@@ -26,7 +26,7 @@ Open `http://localhost:4173`.
 npm run check
 ```
 
-The application is intentionally static and deterministic. It has no authentication, analytics, API keys, backend, external data, or live Bluetooth dependency.
+Scenarios define only the conditions (offline, a retried delivery, wrong units, an old contract). Every outcome is decided at runtime by an idempotent receiver that validates each delivery and refuses to write an already-recorded event ID twice. The application is intentionally static and deterministic. It has no authentication, analytics, API keys, backend, external data, or live Bluetooth dependency.
 
 ## Prepared scenarios
 

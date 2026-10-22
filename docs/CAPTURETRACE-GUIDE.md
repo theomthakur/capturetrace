@@ -113,7 +113,7 @@ Lists each event outcome, reason, measurement, and event ID. It also provides th
 
 ### Metrics
 
-The top counters show captured, accepted, duplicate, review, and silently lost totals. Silently lost remains zero in all prepared scenarios.
+The top counters show captured, accepted, duplicate, review, and silently lost totals. Silently lost is measured, not assumed: any captured event ID that never reaches accepted, held for review, or visibly queued counts as lost. It stays at zero in every prepared scenario because the receiver settles each event.
 
 ## 5. Scenario procedures
 

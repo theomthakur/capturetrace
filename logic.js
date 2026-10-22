@@ -9,13 +9,14 @@ export const SCENARIOS = {
     action: "Continue the survey. All three form fields are trusted.",
     journey: ["The tool creates three identified events.", "The connected app sends each event immediately.", "The receiver validates and accepts all three."],
     events: [
-      event("evt_CT07_0421", "width", 36.625, "in", "accepted", 421),
-      event("evt_CT07_0422", "height", 58.25, "in", "accepted", 422),
-      event("evt_CT07_0423", "depth", 5.5, "in", "accepted", 423),
+      event("evt_CT07_0421", "width", 36.625, "in", 421),
+      event("evt_CT07_0422", "height", 58.25, "in", 422),
+      event("evt_CT07_0423", "depth", 5.5, "in", 423),
     ],
   },
   offline: {
     label: "Offline jobsite",
+    startsOffline: true,
     category: "Connectivity",
     question: "What happens when the jobsite loses internet?",
     description: "The tool keeps capturing while offline. The app saves each event locally, shows that it is queued, and waits for connectivity.",
@@ -24,9 +25,9 @@ export const SCENARIOS = {
     action: "Continue the survey. The queued measurements were replayed and verified.",
     journey: ["The tool captures while the app is offline.", "Three events stay visibly queued on the device.", "Reconnection replays and validates them in order."],
     events: [
-      event("evt_CT07_0431", "width", 36.625, "in", "queued", 431),
-      event("evt_CT07_0432", "height", 58.25, "in", "queued", 432),
-      event("evt_CT07_0433", "depth", 5.5, "in", "queued", 433),
+      event("evt_CT07_0431", "width", 36.625, "in", 431),
+      event("evt_CT07_0432", "height", 58.25, "in", 432),
+      event("evt_CT07_0433", "depth", 5.5, "in", 433),
     ],
   },
   acknowledgement: {
@@ -39,8 +40,8 @@ export const SCENARIOS = {
     action: "No field correction is needed. Record the retry as a suppressed duplicate.",
     journey: ["The tool creates one stable event ID.", "The first delivery succeeds, but its acknowledgment is lost.", "The retry reuses the ID and causes no second write."],
     events: [
-      event("evt_CT07_0441", "width", 36.625, "in", "accepted", 441),
-      event("evt_CT07_0441", "width", 36.625, "in", "duplicate", 441),
+      event("evt_CT07_0441", "width", 36.625, "in", 441),
+      { ...event("evt_CT07_0441", "width", 36.625, "in", 441), retry: true },
     ],
   },
   units: {
@@ -53,7 +54,7 @@ export const SCENARIOS = {
     action: "Confirm the tool mode and intended units before approving the value.",
     journey: ["The tool sends a depth value marked as millimeters.", "The contract expects inches for this field.", "The receiver keeps the raw value and requests confirmation."],
     events: [
-      event("evt_CT07_0451", "depth", 140, "mm", "review", 451),
+      event("evt_CT07_0451", "depth", 140, "mm", 451),
     ],
   },
   contract: {
@@ -66,32 +67,62 @@ export const SCENARIOS = {
     action: "Update the sending app or use an approved compatibility path before retrying.",
     journey: ["An older app sends a measurement.v2 event.", "The receiver supports measurement.v3.", "The event pauses before it can change the form."],
     events: [
-      { ...event("evt_CT07_0461", "height", 58.25, "in", "review", 461), contract: "measurement.v2" },
+      { ...event("evt_CT07_0461", "height", 58.25, "in", 461), contract: "measurement.v2" },
     ],
   },
 };
 
-function event(id, field, value, unit, outcome, sequence, location = "South elevation") {
-  return { id, field, value, unit, outcome, sequence, location, device: "CT-07", contract: "measurement.v3" };
+function event(id, field, value, unit, sequence, location = "South elevation") {
+  return { id, field, value, unit, sequence, location, device: "CT-07", contract: "measurement.v3" };
 }
 
+const SETTLED = new Set(["accepted", "review", "queued"]);
+
+// "lost" = a captured event ID that never reached a settled state (accepted, held, or visibly queued).
 export function summarize(events) {
-  const uniqueCaptures = new Set(events.filter((item) => item.outcome !== "duplicate").map((item) => item.id));
+  const captured = new Set(events.map((item) => item.id));
+  const settled = new Set(events.filter((item) => SETTLED.has(item.outcome)).map((item) => item.id));
   return {
-    captured: uniqueCaptures.size,
+    captured: captured.size,
     accepted: events.filter((item) => item.outcome === "accepted").length,
     duplicate: events.filter((item) => item.outcome === "duplicate").length,
     review: events.filter((item) => item.outcome === "review").length,
-    lost: 0,
+    lost: [...captured].filter((id) => !settled.has(id)).length,
   };
 }
 
 export function validateEvent(candidate, seen = new Set()) {
-  if (seen.has(candidate.id)) return { outcome: "duplicate", reason: "Acknowledgment was lost; retry reused an accepted event ID, so no second write occurred" };
+  if (!candidate.id || !candidate.device || !candidate.field) return { outcome: "review", reason: "Required context is missing" };
+  if (seen.has(candidate.id)) return { outcome: "duplicate", reason: "Retry reused an already-received event ID, so no second write occurred" };
   if (candidate.contract !== "measurement.v3") return { outcome: "review", reason: "Unsupported data contract" };
   if (candidate.unit !== "in") return { outcome: "review", reason: `Expected inches; received ${candidate.unit}` };
-  if (!candidate.id || !candidate.device || !candidate.field) return { outcome: "review", reason: "Required context is missing" };
   return { outcome: "accepted", reason: "Identity, contract, units, and context verified" };
+}
+
+// Idempotent receiver: every delivery is validated; an ID it has already recorded is never written twice.
+export function createReceiver() {
+  const seen = new Set();
+  return {
+    receive(candidate) {
+      const result = validateEvent(candidate, seen);
+      if (result.outcome !== "duplicate" && candidate.id) seen.add(candidate.id);
+      return result;
+    },
+  };
+}
+
+// Pure, untimed run of a scenario through the same client and receiver rules the UI animates.
+export function simulate(scenario) {
+  const receiver = createReceiver();
+  const events = scenario.events.map((item) => ({
+    ...item,
+    outcome: scenario.startsOffline ? "queued" : receiver.receive(item).outcome,
+  }));
+  for (const item of events.filter((candidate) => candidate.outcome === "queued")) {
+    item.outcome = receiver.receive(item).outcome;
+    item.replayed = true;
+  }
+  return events;
 }
 
 export function displayMeasurement(item) {

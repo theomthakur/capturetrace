@@ -1,4 +1,4 @@
-import { SCENARIOS, displayMeasurement, getRunDecision, summarize, validateEvent } from "./logic.js";
+import { SCENARIOS, createReceiver, displayMeasurement, getRunDecision, summarize } from "./logic.js";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -10,6 +10,7 @@ const state = {
   events: [],
   timers: [],
   manualSequence: 500,
+  receiver: createReceiver(),
 };
 
 const elements = {
@@ -99,6 +100,7 @@ function resetWorkspace() {
   clearTimers();
   state.running = false;
   state.events = [];
+  state.receiver = createReceiver();
   setOnline(true);
   elements.run.disabled = false;
   elements.run.querySelector("span:first-child").textContent = "Show this scenario";
@@ -122,7 +124,7 @@ function runScenario() {
   const scenario = SCENARIOS[state.scenario];
   const runEvents = scenario.events.map((item) => ({ ...item }));
 
-  if (state.scenario === "offline") {
+  if (scenario.startsOffline) {
     setOnline(false);
     runEvents.forEach((item, index) => later(() => ingest(item), 450 + index * 650));
     later(() => {
@@ -147,10 +149,12 @@ function finishRun() {
 
 function replayQueued(queued) {
   queued.forEach((item, index) => later(() => {
-    item.outcome = "accepted";
+    const result = state.receiver.receive(item);
+    item.outcome = result.outcome;
     item.replayed = true;
+    item.reason = result.outcome === "accepted" ? "Replayed once; identity, contract, units, and context verified" : result.reason;
     updateTraceItem(item);
-    setField(item.field, item);
+    if (item.outcome === "accepted" || item.outcome === "review") setField(item.field, item);
     updateMetrics();
     updateProgress();
     updateDecision();
@@ -170,7 +174,6 @@ function manualCapture() {
     field,
     value: values[field],
     unit: "in",
-    outcome: state.online ? "accepted" : "queued",
     sequence: state.manualSequence,
     location: "South elevation",
     device: "CT-07",
@@ -179,7 +182,21 @@ function manualCapture() {
   ingest(candidate);
 }
 
+function deliver(item) {
+  if (!state.online) {
+    item.outcome = "queued";
+    item.reason = "Committed locally; waiting for connectivity";
+    return;
+  }
+  const result = state.receiver.receive(item);
+  item.outcome = result.outcome;
+  item.reason = result.outcome === "duplicate" && item.retry
+    ? "Acknowledgment was lost, so the app retried with the same event ID; the receiver recognized it and made no second write"
+    : result.reason;
+}
+
 function ingest(item) {
+  deliver(item);
   updateDevice(item);
   state.events.push(item);
   appendTrace(item);
@@ -203,27 +220,19 @@ function updateDevice(item) {
 
 function appendTrace(item) {
   elements.traceEmpty.hidden = true;
-  const result = explainEvent(item);
   const li = document.createElement("li");
   li.dataset.eventId = item.id;
   li.dataset.outcome = item.outcome;
-  li.innerHTML = traceMarkup(item, result.reason);
+  li.innerHTML = traceMarkup(item, item.reason);
   elements.traceList.append(li);
   elements.traceList.scrollTo({ top: elements.traceList.scrollHeight, behavior: "smooth" });
 }
 
-function explainEvent(item) {
-  if (item.outcome === "queued") return { outcome: "queued", reason: "Committed locally; waiting for connectivity" };
-  if (item.outcome === "duplicate") return validateEvent(item, new Set([item.id]));
-  if (item.replayed) return { outcome: "accepted", reason: "Replayed once; identity, contract, units, and context verified" };
-  return validateEvent(item);
-}
-
 function updateTraceItem(item) {
-  const li = elements.traceList.querySelector(`[data-event-id="${item.id}"]`);
+  const li = [...elements.traceList.querySelectorAll(`[data-event-id="${item.id}"]`)].find((candidate) => candidate.dataset.outcome === "queued");
   if (!li) return;
   li.dataset.outcome = item.outcome;
-  li.innerHTML = traceMarkup(item, "Replayed once; identity, contract, units, and context verified");
+  li.innerHTML = traceMarkup(item, item.reason);
 }
 
 function traceMarkup(item, reason) {
@@ -295,9 +304,8 @@ function exportRunReport() {
     "| Sequence | Event ID | Field | Measurement | State | Evidence |",
     "|---:|---|---|---|---|---|",
     ...state.events.map((item) => {
-      const result = explainEvent(item);
-      const stateLabel = item.replayed ? "accepted after replay" : item.outcome;
-      return `| ${item.sequence} | ${item.id} | ${fieldLabels[item.field]} | ${displayMeasurement(item)} | ${stateLabel} | ${result.reason} |`;
+      const stateLabel = item.replayed ? `${item.outcome} after replay` : item.outcome;
+      return `| ${item.sequence} | ${item.id} | ${fieldLabels[item.field]} | ${displayMeasurement(item)} | ${stateLabel} | ${item.reason} |`;
     }),
     "",
     "## Scope",
