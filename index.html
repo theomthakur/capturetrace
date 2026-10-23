@@ -25,13 +25,6 @@
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span>CaptureTrace</span>
       </a>
-      <div class="header-meta">
-        <a class="text-link is-current" href="index.html" aria-current="page">Demo</a>
-        <a class="text-link" href="documentation.html">Documentation</a>
-        <a class="text-link" href="architecture.html">System design</a>
-        <a class="text-link" href="presentation.html">Presentation</a>
-        <button class="text-button" id="open-notes" type="button">System notes</button>
-      </div>
     </header>
 
     <main id="top">
@@ -89,7 +82,6 @@
       <section class="run-decision" id="run-decision" data-tone="ready" aria-live="polite" aria-label="Field decision">
         <div class="decision-label"><small>FIELD DECISION</small><strong id="decision-status">Not run yet</strong></div>
         <div class="decision-next"><small>WHAT TO DO NEXT</small><p id="decision-action">Choose a situation and select Show this scenario.</p></div>
-        <button id="copy-scenario-link" type="button">Copy scenario link</button>
       </section>
 
       <section class="sandbox" id="sandbox" aria-label="Measurement reliability sandbox">
@@ -175,34 +167,9 @@
         </article>
       </section>
 
-      <section class="flow-overview" aria-labelledby="flow-overview-title">
-        <div class="flow-overview-copy">
-          <span class="section-index">02</span>
-          <small>ONE PIPELINE, FIVE TESTS</small>
-          <h2 id="flow-overview-title">Every scenario starts at capture and ends with a visible decision.</h2>
-          <p>The scenarios are not five steps performed in order. They are five independent runs through the same end-to-end flow. Each run changes one condition so you can see how the system responds.</p>
-          <a href="documentation.html">Read the complete step-by-step guide <span aria-hidden="true">→</span></a>
-        </div>
-        <ol class="common-pipeline" aria-label="Common end-to-end measurement pipeline">
-          <li><span>01</span><div><small>CAPTURE</small><strong>Tool creates a measurement event</strong><p>The reading receives an ID, device, timestamp, field, units, and contract version.</p></div></li>
-          <li><span>02</span><div><small>PERSIST</small><strong>App stores it locally first</strong><p>The event remains recoverable even when delivery cannot happen immediately.</p></div></li>
-          <li><span>03</span><div><small>DELIVER</small><strong>Transport sends or retries it</strong><p>Reconnects and retries reuse the same event identity.</p></div></li>
-          <li><span>04</span><div><small>VALIDATE</small><strong>Receiver checks the full contract</strong><p>Identity, schema, units, context, and sequence must be acceptable.</p></div></li>
-          <li><span>05</span><div><small>DECIDE</small><strong>Workflow exposes the outcome</strong><p>The event is accepted, queued, suppressed, or held with a reason.</p></div></li>
-        </ol>
-        <div class="scenario-branches">
-          <strong>What changes between runs?</strong>
-          <span>Clean capture: nothing fails</span>
-          <span>Offline: delivery waits</span>
-          <span>Lost acknowledgment: delivery repeats</span>
-          <span>Wrong units: validation fails</span>
-          <span>Old contract: schema validation fails</span>
-        </div>
-      </section>
-
       <section class="contract-section" id="contract">
         <div class="contract-intro">
-          <span class="section-index">03</span>
+          <span class="section-index">02</span>
           <h2>Trust travels with the event.</h2>
           <p>The interface can change. The invariant cannot: every accepted value retains enough identity and context to explain where it came from and why it was trusted.</p>
         </div>
@@ -225,13 +192,6 @@
           <div><span>04</span><strong>Safe ambiguity</strong><p>Unexpected context pauses for confirmation; it is never silently guessed.</p></div>
         </div>
       </section>
-
-      <section class="continue-section" aria-label="Continue exploring CaptureTrace">
-        <div><span class="section-index">04</span><h2>Continue past the simulation.</h2><p>The demo shows behavior. The supporting pages explain every step, the design choices, and the interview-ready story.</p></div>
-        <a href="documentation.html"><small>FULL REFERENCE</small><strong>Documentation</strong><span>Every screen, state, and scenario →</span></a>
-        <a href="architecture.html"><small>TECHNICAL VIEW</small><strong>System design</strong><span>Components, flows, and production path →</span></a>
-        <a href="presentation.html"><small>LIVE WALKTHROUGH</small><strong>Presentation</strong><span>Dedicated slides with full screen →</span></a>
-      </section>
     </main>
 
     <footer class="site-footer">
@@ -239,17 +199,6 @@
       <p>Built to explore reliable field measurements. No affiliation with or representation of REEKON Tools.</p>
       <nav aria-label="Om Thakur links"><a href="https://theomthakur.github.io/portfolio" target="_blank" rel="noopener noreferrer">Portfolio ↗</a><a href="https://github.com/theomthakur/capturetrace" target="_blank" rel="noopener noreferrer">Source ↗</a><a href="https://www.linkedin.com/in/theomthakur/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></nav>
     </footer>
-
-    <dialog id="notes-dialog">
-      <div class="dialog-heading"><div><small>SYSTEM NOTES</small><h2>What this prototype proves</h2></div><button id="close-notes" class="icon-button" type="button" aria-label="Close system notes">×</button></div>
-      <div class="notes-grid">
-        <section><span>01</span><h3>Local-first capture</h3><p>A capture is assigned an identity and retained before network delivery is attempted.</p></section>
-        <section><span>02</span><h3>Idempotent replay</h3><p>The receiver uses the stable event ID to make retry and reconnection safe.</p></section>
-        <section><span>03</span><h3>Contract validation</h3><p>Units, field context, schema version, and device metadata are validated at the boundary.</p></section>
-        <section><span>04</span><h3>Human-visible failure</h3><p>Anything uncertain enters a review state with a reason instead of disappearing or being guessed.</p></section>
-      </div>
-      <div class="dialog-note"><strong>Scope boundary</strong><p>This is a browser-only simulation. It is not a BLE implementation, production architecture recommendation, or representation of another company's internal system.</p></div>
-    </dialog>
 
   </body>
 </html>

@@ -20,7 +20,6 @@ const elements = {
   network: $("#network-toggle"),
   reset: $("#reset-button"),
   exportReport: $("#export-report"),
-  copyLink: $("#copy-scenario-link"),
   traceList: $("#trace-list"),
   traceEmpty: $("#trace-empty"),
   queue: $("#queue-banner"),
@@ -39,7 +38,6 @@ const elements = {
   scenarioDescription: $("#scenario-description"),
   scenarioExpected: $("#scenario-expected"),
   journey: [$("#journey-capture"), $("#journey-transport"), $("#journey-decision")],
-  dialog: $("#notes-dialog"),
   decisionPanel: $("#run-decision"),
   decisionStatus: $("#decision-status"),
   decisionAction: $("#decision-action"),
@@ -59,14 +57,8 @@ elements.buttons.forEach((button) => button.addEventListener("click", () => {
 elements.run.addEventListener("click", runScenario);
 elements.reset.addEventListener("click", resetWorkspace);
 elements.exportReport.addEventListener("click", exportRunReport);
-elements.copyLink.addEventListener("click", copyScenarioLink);
 elements.capture.addEventListener("click", manualCapture);
 elements.network.addEventListener("click", toggleNetwork);
-$("#open-notes").addEventListener("click", () => elements.dialog.showModal());
-$("#close-notes").addEventListener("click", () => elements.dialog.close());
-elements.dialog.addEventListener("click", (event) => {
-  if (event.target === elements.dialog) elements.dialog.close();
-});
 
 function later(callback, delay) {
   const timer = window.setTimeout(callback, delay);
@@ -112,7 +104,7 @@ function resetWorkspace() {
   updateMetrics();
   updateProgress();
   updateDecision();
-  updateDevice({ value: 36.625, unit: "in", field: "width", sequence: 421 });
+  updateDevice({ value: 36.625, unit: "in", field: "width", sequence: 421, contract: "measurement.v3" });
 }
 
 function runScenario() {
@@ -331,18 +323,6 @@ function updateScenarioUrl() {
   const url = new URL(window.location.href);
   url.searchParams.set("scenario", state.scenario);
   window.history.replaceState({}, "", url);
-}
-
-async function copyScenarioLink() {
-  const url = new URL(window.location.href);
-  url.searchParams.set("scenario", state.scenario);
-  try {
-    await navigator.clipboard.writeText(url.toString());
-    elements.copyLink.textContent = "Link copied";
-  } catch {
-    window.prompt("Copy this scenario link", url.toString());
-  }
-  later(() => { elements.copyLink.textContent = "Copy scenario link"; }, 1800);
 }
 
 function updateProgress() {

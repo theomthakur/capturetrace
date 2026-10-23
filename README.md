@@ -1,61 +1,42 @@
 # CaptureTrace
 
-CaptureTrace is an independent browser demo for synthetic connected field measurements. It shows what happens when a capture is offline, a delivery repeats, units do not match, or an older app sends data. Every run ends with a plain field decision, a next action, and a downloadable handoff report.
+A small browser demo of one idea: **a measurement is only useful if the value and its context arrive together.**
 
-The prototype was prepared by Om Thakur for a technical conversation about connected hardware/software systems. It is not affiliated with, endorsed by, or representative of REEKON Tools or any other company's internal architecture.
+Think of a contractor measuring a window opening on a jobsite. The reading has to reach the job form with its unit, which tool took it, which field it belongs to, and when, even if the signal drops, the app retries, or someone's tool is set to the wrong units. CaptureTrace shows what a safe system does in each of those cases, using synthetic data only.
 
-## Links
+It is an independent prototype by Om Thakur, built for a technical conversation about connected tools. It is not affiliated with or representative of any company's real architecture.
 
 - Live demo: https://capturetrace.vercel.app
-- Documentation: https://capturetrace.vercel.app/documentation.html
-- System design: https://capturetrace.vercel.app/architecture.html
-- Presentation: https://capturetrace.vercel.app/presentation.html
 - Source: https://github.com/theomthakur/capturetrace
 
-## Run locally
+## The five scenarios
+
+1. **Clean capture:** everything works.
+2. **Offline jobsite:** captures are saved on the device, shown as queued, then replayed in order when the signal returns.
+3. **Lost acknowledgment:** the server saved the reading but the reply was lost, so the app retries. The same event ID means it is saved only once.
+4. **Wrong units:** the form expects inches but gets millimeters. The raw value is kept and a person confirms. Nothing is guessed.
+5. **Old app contract:** an older app sends a data format the receiver no longer accepts. The event is held before it can touch the form.
+
+Every run ends with a plain field decision and a next action, and can be exported as a Markdown report.
+
+## Files
+
+| File | What it does |
+|---|---|
+| `index.html` | The whole page: scenario picker, the three panels (tool, job form, trace), metrics, and the event contract example. |
+| `styles.css` | All styling. |
+| `app.js` | The page controller. Reads the chosen scenario, animates the run, updates the tool, form, trace and counters, and exports the report. |
+| `logic.js` | The core rules, with no page code. Scenario definitions, the validator, the idempotent receiver (never records the same event ID twice), the simulator, and the decision text. |
+| `tests/logic.test.js` | 13 unit tests for the rules in `logic.js`. |
+| `scripts/check.mjs` | A quick check that the page still has its required pieces. |
+| `assets/` | Favicon and the social preview card. |
+| `package.json` | Scripts only. No dependencies. |
+
+## Run and check
 
 ```bash
-npm run dev
+npm run dev     # serves http://localhost:4173
+npm run check   # unit tests plus page checks
 ```
 
-Open `http://localhost:4173`.
-
-## Validate
-
-```bash
-npm run check
-```
-
-Scenarios define only the conditions (offline, a retried delivery, wrong units, an old contract). Every outcome is decided at runtime by an idempotent receiver that validates each delivery and refuses to write an already-recorded event ID twice. The application is intentionally static and deterministic. It has no authentication, analytics, API keys, backend, external data, or live Bluetooth dependency.
-
-## Prepared scenarios
-
-1. Clean connected capture.
-2. Offline capture followed by ordered replay after reconnection.
-3. A lost acknowledgment followed by a safe, deduplicated retry.
-4. An unexpected unit held for human confirmation.
-5. An older data-contract version stopped before it changes the form.
-
-Every completed or partial run can be exported as a Markdown handoff report containing the job, final decision, required next action, totals, measurement identities, values, outcomes, and reasons.
-
-Each scenario can also be shared directly with `?scenario=normal`, `offline`, `acknowledgement`, `units`, or `contract`.
-
-## One pipeline, five independent tests
-
-CaptureTrace has one end-to-end reliability pipeline: capture, persist, deliver, validate, and decide. The five prepared scenarios are independent test runs through that shared pipeline. They are not five sequential workflow steps.
-
-## System design walkthrough
-
-The live site separates the working demo from the supporting technical narrative:
-
-1. The documentation page explains the purpose, end-to-end journey, interface, scenarios, evidence report, implementation, and talk track.
-2. The system design page covers the connected tool, event builder, durable outbox, validation gate, decision states, design choices, stack, and production evolution path.
-3. The eight-slide presentation provides a concise technical walkthrough with keyboard, button, and browser full-screen controls.
-
-Open `https://capturetrace.vercel.app/presentation.html` to launch presentation mode. Use the full-screen button or press `F`; use the arrow keys to move between slides.
-
-The current prototype uses semantic HTML, responsive CSS, vanilla JavaScript ES modules, deterministic domain logic, Node tests, GitHub, and Vercel. It has zero runtime packages and no external APIs.
-
-## Scope boundary
-
-All devices, projects, measurements, event identifiers, and workflow behavior are synthetic. The code illustrates engineering principles rather than prescribing a production implementation.
+Plain HTML, CSS and JavaScript (ES modules). No framework, backend, build step, API keys or Bluetooth dependency. Hosted on Vercel, which redeploys on every push to `main`.
